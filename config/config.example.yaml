@@ -1,0 +1,22 @@
+project:
+  name: automated-interceptor-drone-guidance-system
+  mode: portfolio-demo
+
+camera:
+  source: 0
+  width: 1280
+  height: 720
+
+detection:
+  model: yolo11n.pt
+  confidence_threshold: 0.35
+  image_size: 640
+
+tracking:
+  tracker: bytetrack.yaml
+  persist: true
+
+visualization:
+  show_fps: true
+  show_track_ids: true
+  show_selected_track: true
