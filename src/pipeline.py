@@ -3,10 +3,9 @@ from __future__ import annotations
 import argparse
 import json
 import time
+from typing import Any
 
-import cv2
-from ultralytics import YOLO
-
+from src.config import load_config
 from src.health import evaluate_health
 from src.interfaces import PerceptionSnapshot
 from src.lock_state import TargetLockState
@@ -19,11 +18,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Detection, tracking, selected-track state, and perception telemetry."
     )
-    parser.add_argument("--model", default="yolo11n.pt")
-    parser.add_argument("--source", default="0")
-    parser.add_argument("--tracker", default="bytetrack.yaml")
-    parser.add_argument("--conf", type=float, default=0.35)
-    parser.add_argument("--imgsz", type=int, default=640)
+    parser.add_argument("--config", default=None, help="Optional YAML runtime configuration.")
+    parser.add_argument("--model", default=None)
+    parser.add_argument("--source", default=None)
+    parser.add_argument("--tracker", default=None)
+    parser.add_argument("--conf", type=float, default=None)
+    parser.add_argument("--imgsz", type=int, default=None)
     parser.add_argument("--device", default=None)
     parser.add_argument("--selected-track-id", type=int, default=None)
     parser.add_argument("--show", action="store_true")
@@ -31,9 +31,34 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _section(config: dict[str, Any], name: str) -> dict[str, Any]:
+    value = config.get(name, {})
+    return value if isinstance(value, dict) else {}
+
+
 def main() -> None:
     args = build_parser().parse_args()
-    model = YOLO(args.model)
+    config = load_config(args.config) if args.config else {}
+
+    camera = _section(config, "camera")
+    detection = _section(config, "detection")
+    tracking = _section(config, "tracking")
+
+    model_path = args.model or detection.get("model", "yolo11n.pt")
+    source = parse_source(args.source if args.source is not None else camera.get("source", 0))
+    tracker = args.tracker or tracking.get("tracker", "bytetrack.yaml")
+    conf = args.conf if args.conf is not None else float(detection.get("confidence_threshold", 0.35))
+    imgsz = args.imgsz if args.imgsz is not None else int(detection.get("image_size", 640))
+
+    from ultralytics import YOLO
+
+    cv2 = None
+    if args.show:
+        import cv2 as cv2_module
+
+        cv2 = cv2_module
+
+    model = YOLO(model_path)
     lock = TargetLockState()
     metrics = RuntimeMetrics(window=60)
 
@@ -41,11 +66,11 @@ def main() -> None:
         lock.select(args.selected_track_id)
 
     results = model.track(
-        source=parse_source(args.source),
-        tracker=args.tracker,
+        source=source,
+        tracker=tracker,
         persist=True,
-        conf=args.conf,
-        imgsz=args.imgsz,
+        conf=conf,
+        imgsz=imgsz,
         device=args.device,
         stream=True,
         verbose=False,
@@ -109,7 +134,8 @@ def main() -> None:
             if cv2.waitKey(1) & 0xFF in (27, ord("q")):
                 break
 
-    cv2.destroyAllWindows()
+    if cv2 is not None:
+        cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
