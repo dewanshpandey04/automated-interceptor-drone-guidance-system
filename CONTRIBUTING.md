@@ -1,6 +1,6 @@
 # Contributing
 
-Contributions are welcome for bug fixes, tests, documentation, portability, and performance tooling.
+Contributions are welcome for bug fixes, tests, documentation, portability, configuration, and performance tooling.
 
 ## Development setup
 
@@ -10,35 +10,39 @@ cd automated-interceptor-drone-guidance-system
 
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+python -m pip install --upgrade pip
+pip install -r requirements-dev.txt
 ```
 
-Run the test suite before submitting changes:
+Install `requirements.txt` as well when running the YOLO/OpenCV entry points locally.
+
+## Quality checks
+
+Before opening a pull request, run:
 
 ```powershell
-pytest -q
+python -m compileall -q src scripts tests
+ruff check .
+python -m pytest -q
 ```
 
 ## Workflow
 
-1. Create a branch from `develop`.
-2. Use a clear branch name such as `feature/...`, `fix/...`, or `docs/...`.
-3. Keep each change focused on one problem.
-4. Add or update tests when changing reusable logic.
-5. Run the test suite locally.
-6. Open a pull request into `develop` with a short description of the change and validation performed.
+1. Branch from `develop`.
+2. Use a focused name such as `feature/...`, `fix/...`, or `docs/...`.
+3. Keep each change scoped to one problem.
+4. Add or update tests when reusable logic changes.
+5. Run the local quality checks.
+6. Open a pull request into `develop` and describe the change and validation performed.
 
 ## Code guidelines
 
-- Target Python 3.11 or newer.
-- Prefer small modules with clear responsibilities.
-- Add type hints for reusable interfaces and data structures.
-- Keep model paths, camera sources, and runtime settings configurable.
-- Avoid committing generated outputs, model weights, datasets, or credentials.
-
-## Repository boundaries
-
-Do not commit proprietary source code, private datasets, camera credentials, production model weights, internal network details, or confidential deployment configuration.
+- Support Python 3.10+.
+- Prefer small modules with a single responsibility.
+- Use type hints for reusable interfaces and data structures.
+- Keep model paths, sources, thresholds, and devices configurable.
+- Keep model-specific result objects behind adapter boundaries.
+- Do not commit generated outputs, model weights, datasets, credentials, or confidential configuration.
 
 ## Branches
 
