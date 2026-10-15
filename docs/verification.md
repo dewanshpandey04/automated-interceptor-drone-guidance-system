@@ -1,24 +1,39 @@
-# Verification Notes
+# Verification
 
-The public project is structured around checks that demonstrate software quality without exposing proprietary data.
+## Automated quality gates
 
-## Functional checks
+GitHub Actions runs the following checks on Python 3.10, 3.11, and 3.12:
 
-- numeric webcam inputs are parsed correctly
-- bounding-box centers are computed deterministically
-- visible-track selection is stable for known inputs
-- track-state objects serialize to a predictable schema
-- detector/tracker scripts accept file, webcam, and stream-style sources
+```powershell
+python -m compileall -q src scripts tests
+ruff check .
+python -m pytest -q
+```
 
-## Performance checks
+## Unit-test coverage
 
-Use `scripts/benchmark.py` on hardware you control to record:
+The test suite validates:
 
+- webcam/source parsing
+- configuration schema validation
+- bounding-box geometry helpers
+- explicit selected-track visibility
+- target-state serialization
+- Ultralytics-result normalization using lightweight test doubles
+- perception-snapshot serialization
+- rolling performance metrics
+- runtime health-state evaluation
+
+## Performance verification
+
+Use `scripts/benchmark.py` to record:
+
+- measured frame count
 - mean inference latency
 - p95 inference latency
 - approximate inference FPS
-- model name
+- model
 - image size
-- device
+- compute device
 
-Do not present benchmark numbers as production results unless they were measured on the stated hardware and configuration.
+Performance comparisons should state the model format, input size, precision, hardware, and source pipeline.
