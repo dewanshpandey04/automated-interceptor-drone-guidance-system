@@ -2,11 +2,11 @@
 
 ![CI](https://github.com/dewanshpandey04/automated-interceptor-drone-guidance-system/actions/workflows/ci.yml/badge.svg)
 
-A public, portfolio-safe representation of the **computer-vision, target-state, trajectory-integration, and software-integration work** I performed on an automated interceptor-drone project.
+A public, portfolio-safe representation of the **computer-vision and software-integration work** I performed on an automated interceptor-drone project.
 
-My work focused on the perception stack: live camera processing, custom YOLO detection, multi-object tracking, track-state handling, **perception-layer target locking**, **automated trajectory-planning integration**, edge-AI inference, performance measurement, and integration boundaries for the wider autonomous UAV software stack.
+My work focused on the perception and integration layers: live camera processing, custom YOLO detection, multi-object tracking, track-state handling, **perception-layer target locking**, **automated interception pipeline integration**, edge-AI inference, performance measurement, and clean software boundaries for the wider autonomous UAV stack.
 
-> This repository does not publish Vayuron proprietary source code, private datasets, model weights, credentials, flight-controller commands, navigation/control laws, proprietary trajectory-generation algorithms, or operational interception logic.
+> This repository does not publish Vayuron proprietary source code, private datasets, model weights, credentials, flight-controller commands, navigation/control laws, actuation logic, or operational interception behavior.
 
 ## My contribution
 
@@ -14,13 +14,31 @@ My work focused on the perception stack: live camera processing, custom YOLO det
 - Integrated ByteTrack for persistent multi-object tracking across live video frames.
 - Implemented reusable track-state structures for IDs, classes, confidence scores, and bounding boxes.
 - Developed a perception-layer target-locking workflow that maintains selected-track / lock-state metadata across frames.
-- Exposed target-lock state through a clean software interface for visualization, telemetry, and integration with the wider autonomous system.
-- Worked on the software handoff between target-state estimation and the autonomous trajectory-generation / path-planning layer.
-- Structured perception outputs so downstream autonomy modules could consume stable target-state data without depending directly on raw detector outputs.
-- Kept perception, trajectory-integration interfaces, and vehicle-control implementation separated so modules remained testable and maintainable.
+- Exposed target-lock state through a clean software interface for visualization, telemetry, and wider autonomous-system integration.
+- Contributed to the **automated interception pipeline** by connecting camera perception, detection, tracking, target-state handling, and target-locking components through modular software interfaces.
+- Structured perception outputs so downstream autonomy components could consume stable state data without depending directly on raw detector outputs.
+- Kept perception, integration interfaces, and vehicle-control implementation separated so modules remained testable and maintainable.
 - Structured the vision stack into testable modules for detection, tracking, state handling, configuration, metrics, and benchmarking.
 - Worked with NVIDIA Jetson-class edge hardware for low-latency onboard inference.
 - Added validation utilities and CI so the public implementation can be inspected like a real engineering project.
+
+## Automated Interception Pipeline
+
+The professional system used a modular interception pipeline in which multiple software components were connected through clear interfaces.
+
+At a high level, the pipeline included:
+
+- live camera / video acquisition
+- real-time object detection
+- multi-object tracking with persistent IDs
+- target-state representation
+- perception-layer target locking
+- telemetry and visualization outputs
+- software handoff to the wider autonomous UAV stack
+
+The goal of this architecture was to keep perception, tracking, state management, and system integration separated into testable components rather than embedding everything in one monolithic script.
+
+The public repository demonstrates the **perception and software-integration side of that pipeline only**. It intentionally excludes proprietary guidance algorithms, flight-control commands, navigation/control laws, actuation logic, and operational interception behavior.
 
 ## Target-Locking System
 
@@ -33,17 +51,6 @@ Its software responsibilities included:
 - keeping target-state information separate from raw detector outputs
 - presenting lock status to visualization / telemetry layers
 - providing a defined perception interface for the larger autonomous software stack
-
-## Automated Trajectory Integration
-
-The wider professional system also included an **automated trajectory-planning layer**. My portfolio describes the integration at a high level:
-
-- target-state estimation was prepared in a stable, reusable software representation
-- selected-track state was exposed to downstream autonomy modules
-- the perception-to-autonomy interface separated computer-vision outputs from trajectory-generation and vehicle-control code
-- trajectory-related processing was treated as a distinct subsystem so perception, planning, and control could be developed and tested independently
-
-The public repository intentionally stops at this software boundary. It does **not** contain proprietary trajectory algorithms, flight-control commands, navigation/control laws, actuation logic, or operational interception behavior.
 
 ## Professional project results
 
