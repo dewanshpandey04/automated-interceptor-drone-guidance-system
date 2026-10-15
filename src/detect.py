@@ -2,9 +2,6 @@ from __future__ import annotations
 
 import argparse
 
-import cv2
-from ultralytics import YOLO
-
 from src.utils import parse_source
 
 
@@ -22,8 +19,16 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_parser().parse_args()
-    model = YOLO(args.model)
 
+    from ultralytics import YOLO
+
+    cv2 = None
+    if args.show:
+        import cv2 as cv2_module
+
+        cv2 = cv2_module
+
+    model = YOLO(args.model)
     results = model.predict(
         source=parse_source(args.source),
         conf=args.conf,
@@ -37,12 +42,14 @@ def main() -> None:
     for result in results:
         if not args.show:
             continue
+
         frame = result.plot()
         cv2.imshow("Perception - Detection", frame)
         if cv2.waitKey(1) & 0xFF in (27, ord("q")):
             break
 
-    cv2.destroyAllWindows()
+    if cv2 is not None:
+        cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
