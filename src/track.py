@@ -3,9 +3,6 @@ from __future__ import annotations
 import argparse
 import time
 
-import cv2
-from ultralytics import YOLO
-
 from src.utils import contains_track, parse_source
 
 
@@ -30,8 +27,16 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_parser().parse_args()
-    model = YOLO(args.model)
 
+    from ultralytics import YOLO
+
+    cv2 = None
+    if args.show:
+        import cv2 as cv2_module
+
+        cv2 = cv2_module
+
+    model = YOLO(args.model)
     results = model.track(
         source=parse_source(args.source),
         tracker=args.tracker,
@@ -51,30 +56,18 @@ def main() -> None:
         fps = 1.0 / max(now - previous, 1e-9)
         previous = now
 
-        frame = result.plot()
         track_ids: list[int] = []
         if result.boxes is not None and result.boxes.id is not None:
             track_ids = [int(v) for v in result.boxes.id.cpu().tolist()]
 
         selected_visible = contains_track(track_ids, args.selected_track_id)
 
-        cv2.putText(
-            frame,
-            f"FPS {fps:.1f} | Tracks {len(track_ids)}",
-            (20, 35),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.8,
-            (255, 255, 255),
-            2,
-            cv2.LINE_AA,
-        )
-
-        if args.selected_track_id is not None:
-            status = "LOCKED" if selected_visible else "NOT_VISIBLE"
+        if args.show:
+            frame = result.plot()
             cv2.putText(
                 frame,
-                f"Selected track: {args.selected_track_id} | {status}",
-                (20, 70),
+                f"FPS {fps:.1f} | Tracks {len(track_ids)}",
+                (20, 35),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.8,
                 (255, 255, 255),
@@ -82,12 +75,25 @@ def main() -> None:
                 cv2.LINE_AA,
             )
 
-        if args.show:
+            if args.selected_track_id is not None:
+                status = "LOCKED" if selected_visible else "NOT_VISIBLE"
+                cv2.putText(
+                    frame,
+                    f"Selected track: {args.selected_track_id} | {status}",
+                    (20, 70),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.8,
+                    (255, 255, 255),
+                    2,
+                    cv2.LINE_AA,
+                )
+
             cv2.imshow("Perception - Tracking", frame)
             if cv2.waitKey(1) & 0xFF in (27, ord("q")):
                 break
 
-    cv2.destroyAllWindows()
+    if cv2 is not None:
+        cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
