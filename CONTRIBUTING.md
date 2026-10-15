@@ -1,15 +1,47 @@
 # Contributing
 
-This is a portfolio repository maintained by Dewansh Pandey.
+Contributions are welcome for bug fixes, tests, documentation, portability, and performance tooling.
 
-Contributions that improve code quality, tests, documentation, portability, or reproducible benchmarking are welcome.
+## Development setup
 
-## Development workflow
+```powershell
+git clone https://github.com/dewanshpandey04/automated-interceptor-drone-guidance-system.git
+cd automated-interceptor-drone-guidance-system
 
-1. Branch from `develop`.
-2. Keep changes focused and small.
-3. Add or update tests for reusable logic.
-4. Do not add private datasets, footage, credentials, model weights, or proprietary company code.
-5. Open a pull request describing the change and how it was validated.
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
 
-The `main` branch is kept recruiter-facing and stable.
+Run the test suite before submitting changes:
+
+```powershell
+pytest -q
+```
+
+## Workflow
+
+1. Create a branch from `develop`.
+2. Use a clear branch name such as `feature/...`, `fix/...`, or `docs/...`.
+3. Keep each change focused on one problem.
+4. Add or update tests when changing reusable logic.
+5. Run the test suite locally.
+6. Open a pull request into `develop` with a short description of the change and validation performed.
+
+## Code guidelines
+
+- Target Python 3.11 or newer.
+- Prefer small modules with clear responsibilities.
+- Add type hints for reusable interfaces and data structures.
+- Keep model paths, camera sources, and runtime settings configurable.
+- Avoid committing generated outputs, model weights, datasets, or credentials.
+
+## Repository boundaries
+
+Do not commit proprietary source code, private datasets, camera credentials, production model weights, internal network details, or confidential deployment configuration.
+
+## Branches
+
+- `main` — stable branch
+- `develop` — active development and integration
+- `docs` — documentation work
