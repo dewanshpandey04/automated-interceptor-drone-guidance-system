@@ -18,7 +18,6 @@ My work focused on the perception and integration layers: live camera processing
 - Contributed to the **automated interception pipeline** by connecting camera perception, detection, tracking, target-state handling, and target-locking components through modular software interfaces.
 - Structured perception outputs so downstream autonomy components could consume stable state data without depending directly on raw detector outputs.
 - Kept perception, integration interfaces, and vehicle-control implementation separated so modules remained testable and maintainable.
-- Structured the vision stack into testable modules for detection, tracking, state handling, configuration, metrics, and benchmarking.
 - Worked with NVIDIA Jetson-class edge hardware for low-latency onboard inference.
 - Added validation utilities and CI so the public implementation can be inspected like a real engineering project.
 
@@ -26,7 +25,7 @@ My work focused on the perception and integration layers: live camera processing
 
 The professional system used a modular interception pipeline in which multiple software components were connected through clear interfaces.
 
-At a high level, the pipeline included:
+At a high level, the public-facing portion covers:
 
 - live camera / video acquisition
 - real-time object detection
@@ -36,21 +35,19 @@ At a high level, the pipeline included:
 - telemetry and visualization outputs
 - software handoff to the wider autonomous UAV stack
 
-The goal of this architecture was to keep perception, tracking, state management, and system integration separated into testable components rather than embedding everything in one monolithic script.
-
 The public repository demonstrates the **perception and software-integration side of that pipeline only**. It intentionally excludes proprietary guidance algorithms, flight-control commands, navigation/control laws, actuation logic, and operational interception behavior.
 
 ## Target-Locking System
 
-The target-locking work sat inside the **perception layer** of the project.
+The target-locking code in this public repository is deliberately limited to **manual selected-track state and visualization**.
 
-Its software responsibilities included:
+It demonstrates:
 
-- maintaining a selected target's identity using the active tracking state
-- carrying selected-track / lock-state metadata across consecutive video frames
-- keeping target-state information separate from raw detector outputs
-- presenting lock status to visualization / telemetry layers
-- providing a defined perception interface for the larger autonomous software stack
+- maintaining a selected track ID across frames
+- reporting whether the selected track is currently visible
+- attaching lock-state metadata to a tracked-object representation
+- exposing that state through a serializable perception interface
+- keeping lock-state handling independent from vehicle-control logic
 
 ## Professional project results
 
@@ -67,20 +64,25 @@ The following figures describe the original professional project work and are **
 
 **Python · YOLO · PyTorch · OpenCV · ByteTrack · CUDA · NVIDIA Jetson · Edge AI**
 
-## Repository structure
+## Source code
 
 | Path | Purpose |
 |---|---|
+| `src/camera.py` | Webcam / video / network-stream frame acquisition wrapper |
 | `src/detect.py` | Real-time YOLO inference |
-| `src/track.py` | YOLO + ByteTrack live tracking |
-| `src/target_state.py` | Typed tracked-object and lock-state representation |
-| `src/metrics.py` | Runtime FPS / latency metrics |
-| `src/config.py` | Configuration loading and validation |
-| `config/` | Public-safe runtime configuration |
-| `scripts/benchmark.py` | Reproducible inference benchmark utility |
-| `tests/` | Unit tests for public modules |
-| `docs/` | Architecture, verification, results, and code-tour notes |
-| `.github/workflows/` | Automated CI checks |
+| `src/track.py` | YOLO + ByteTrack tracking with explicit selected-track visualization |
+| `src/pipeline.py` | Integrated public perception pipeline |
+| `src/target_state.py` | Typed tracked-object state |
+| `src/lock_state.py` | Manual perception-layer lock-state manager |
+| `src/result_adapter.py` | Converts model/tracker results into stable track-state objects |
+| `src/interfaces.py` | Serializable perception snapshot contract |
+| `src/metrics.py` | Rolling FPS / latency metrics |
+| `src/health.py` | Runtime health/status evaluation |
+| `src/config.py` | YAML configuration loading and validation |
+| `scripts/benchmark.py` | Reproducible inference benchmark |
+| `tests/` | Unit tests for state, interfaces, metrics, health, and utilities |
+| `models/README.md` | Model-artifact policy |
+| `docs/` | Architecture, verification, performance, and code-tour notes |
 
 ## Quick start
 
@@ -90,31 +92,37 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Run detection:
+Detection:
 
 ```powershell
 python src/detect.py --source 0 --show
 ```
 
-Run multi-object tracking:
+Tracking:
 
 ```powershell
 python src/track.py --source 0 --show
 ```
 
-Use a local custom model without committing the weight file:
+Public integrated pipeline with a manually selected track ID:
 
 ```powershell
-python src/track.py --model path\to\model.pt --source path\to\video.mp4 --show
+python src/pipeline.py --source 0 --selected-track-id 7 --show --emit-json
 ```
 
-Run unit tests:
+Use a local model without committing the weight file:
+
+```powershell
+python src/pipeline.py --model path\to\model.pt --source path\to\video.mp4 --show
+```
+
+Run tests:
 
 ```powershell
 pytest -q
 ```
 
-Run a local benchmark:
+Run a benchmark:
 
 ```powershell
 python scripts/benchmark.py --model yolo11n.pt --source path\to\video.mp4
