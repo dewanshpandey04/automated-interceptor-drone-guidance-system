@@ -6,7 +6,7 @@ import time
 import cv2
 from ultralytics import YOLO
 
-from utils import nearest_track_to_center, parse_source
+from utils import contains_track, parse_source
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -17,6 +17,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--conf", type=float, default=0.35)
     parser.add_argument("--imgsz", type=int, default=640)
     parser.add_argument("--device", default=None)
+    parser.add_argument(
+        "--selected-track-id",
+        type=int,
+        default=None,
+        help="Optional manually selected track ID for lock-state visualization.",
+    )
     parser.add_argument("--show", action="store_true")
     parser.add_argument("--save", action="store_true")
     return parser
@@ -47,17 +53,11 @@ def main() -> None:
 
         frame = result.plot()
         track_ids: list[int] = []
-        boxes: list[list[float]] = []
 
-        if result.boxes is not None:
-            if result.boxes.id is not None:
-                track_ids = [int(v) for v in result.boxes.id.cpu().tolist()]
-            if result.boxes.xyxy is not None:
-                boxes = result.boxes.xyxy.cpu().tolist()
+        if result.boxes is not None and result.boxes.id is not None:
+            track_ids = [int(v) for v in result.boxes.id.cpu().tolist()]
 
-        visual_lock_id = nearest_track_to_center(
-            track_ids, boxes, frame.shape[1], frame.shape[0]
-        )
+        selected_visible = contains_track(track_ids, args.selected_track_id)
 
         cv2.putText(
             frame,
@@ -70,10 +70,11 @@ def main() -> None:
             cv2.LINE_AA,
         )
 
-        if visual_lock_id is not None:
+        if args.selected_track_id is not None:
+            status = "LOCKED" if selected_visible else "NOT_VISIBLE"
             cv2.putText(
                 frame,
-                f"Selected track: {visual_lock_id}",
+                f"Selected track: {args.selected_track_id} | {status}",
                 (20, 70),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.8,
