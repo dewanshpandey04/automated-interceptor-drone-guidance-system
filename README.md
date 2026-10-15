@@ -1,52 +1,50 @@
 # Automated Interceptor Drone Guidance & Perception System
 
-Public, portfolio-safe reconstruction of the **perception and software-integration layers** of an automated interceptor-drone project I worked on.
+A public, portfolio-safe representation of the **computer-vision and software-integration work** I performed on an automated interceptor-drone project.
 
-The original engineering work included real-time aerial object detection, multi-object tracking, target-state handling, target-locking workflows, live camera processing, edge-AI inference, and integration with an autonomous UAV software stack.
+My work focused on the perception stack: live camera processing, custom YOLO detection, multi-object tracking, track-state handling, target-selection/lock-state visualization, edge-AI inference, performance measurement, and integration boundaries for the wider autonomous UAV software stack.
 
-> **IP / safety note:** this repository does **not** contain Vayuron proprietary source code, private datasets, credentials, flight-controller commands, navigation/control laws, or operational interception/engagement logic. It demonstrates the computer-vision and software-engineering work with public tooling and safe demo interfaces.
+> This repository does not publish Vayuron proprietary source code, private datasets, model weights, credentials, flight-controller commands, navigation/control laws, or operational interception logic.
 
-## What this repository demonstrates
+## My contribution
 
-- Real-time YOLO object detection
-- ByteTrack multi-object tracking
-- Persistent track IDs and track-state representation
-- Target-lock **visualization/state management only**
-- Live webcam, video, and network-stream input
-- FPS and inference-latency measurement
-- Modular perception-to-autonomous-system interface design
-- Edge-AI deployment structure for NVIDIA Jetson-class hardware
-- Unit tests and validation utilities
+- Built real-time object-detection pipelines for aerial imagery using YOLO, PyTorch, and OpenCV.
+- Integrated ByteTrack for persistent multi-object tracking across live video frames.
+- Implemented reusable track-state structures for IDs, classes, confidence scores, and bounding boxes.
+- Added target-selection / lock-state visualization at the perception layer without exposing vehicle-control logic.
+- Structured the vision stack into testable modules for detection, tracking, state handling, configuration, metrics, and benchmarking.
+- Worked with NVIDIA Jetson-class edge hardware for low-latency onboard inference.
+- Added validation utilities and CI so the public implementation can be inspected like a real engineering project.
 
-## Tech stack
+## Professional project results
+
+The following figures describe the original professional project work and are **not claimed as reproducible from the public repository**, because the private dataset, trained model artifacts, and production hardware configuration are intentionally excluded.
+
+| Result | Professional project |
+|---|---:|
+| Training dataset | ~18,000 aerial images |
+| Detector performance | mAP50 above 0.92 on custom aerial detectors |
+| Jetson Orin NX inference | 70+ FPS in the project configuration |
+| Live edge inference | 50+ FPS on optimized live-camera pipelines |
+
+## Technical stack
 
 **Python · YOLO · PyTorch · OpenCV · ByteTrack · CUDA · NVIDIA Jetson · Edge AI**
 
-## High-level architecture
+## Repository structure
 
-```text
-Camera / Video / Stream
-          |
-          v
-    Frame Acquisition
-          |
-          v
-     YOLO Detector
-          |
-          v
-   ByteTrack Tracker
-          |
-          v
- Track State / Lock State
-          |
-          v
- Perception Interface Layer
-      /             \
-     v               v
-Telemetry / HUD   Autonomous-System API
-```
-
-See [docs/architecture.md](docs/architecture.md) for the public-safe architecture.
+| Path | Purpose |
+|---|---|
+| `src/detect.py` | Real-time YOLO inference |
+| `src/track.py` | YOLO + ByteTrack live tracking |
+| `src/target_state.py` | Typed tracked-object state model |
+| `src/metrics.py` | Runtime FPS / latency metrics |
+| `src/config.py` | Configuration loading and validation |
+| `config/` | Public-safe runtime configuration |
+| `scripts/benchmark.py` | Reproducible inference benchmark utility |
+| `tests/` | Unit tests for public modules |
+| `docs/` | Architecture, verification, results, and code-tour notes |
+| `.github/workflows/` | Automated CI checks |
 
 ## Quick start
 
@@ -56,44 +54,49 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Detection:
+Run detection:
 
 ```powershell
 python src/detect.py --source 0 --show
 ```
 
-Tracking:
+Run multi-object tracking:
 
 ```powershell
 python src/track.py --source 0 --show
 ```
 
-Use your own local model without committing weights:
+Use a local custom model without committing the weight file:
 
 ```powershell
 python src/track.py --model path\to\model.pt --source path\to\video.mp4 --show
 ```
 
-## Repository layout
+Run unit tests:
 
-```text
-config/                  Public configuration template
-docs/                    Architecture and verification notes
-scripts/                 Benchmark utilities
-src/                     Detection, tracking, state and utilities
-tests/                   Unit tests
-.github/workflows/       CI
+```powershell
+pytest -q
 ```
 
-## Branches
+Run a local benchmark:
 
-- `main` — stable portfolio version
-- `develop` — development/integration branch
-- `docs` — documentation-focused branch
+```powershell
+python scripts/benchmark.py --model yolo11n.pt --source path\to\video.mp4
+```
 
-## Engineering context
+## Engineering documentation
 
-This public repository is designed so a recruiter or engineer can inspect how the perception stack is organized, how detection/tracking outputs are represented, how components are tested, and how performance is measured—without exposing company IP.
+- [System architecture](docs/architecture.md)
+- [Code tour](docs/code-tour.md)
+- [Performance and results](docs/performance.md)
+- [Verification approach](docs/verification.md)
+- [Public / proprietary boundary](docs/public-scope.md)
+
+## Branch strategy
+
+- `main` — stable recruiter-facing portfolio version
+- `develop` — development and integration work
+- `docs` — documentation-focused changes
 
 ## Author
 
