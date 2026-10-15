@@ -2,59 +2,48 @@
 
 ![CI](https://github.com/dewanshpandey04/automated-interceptor-drone-guidance-system/actions/workflows/ci.yml/badge.svg)
 
-## Overview
+Real-time **computer-vision and perception software** for aerial object detection, multi-object tracking, target-state handling, selected-track lock state, runtime diagnostics, and edge-AI deployment.
 
-Reference implementation of the **perception and software-integration layer** used in an automated interceptor UAV system.
+**Python · PyTorch · YOLO · OpenCV · ByteTrack · CUDA · NVIDIA Jetson · GitHub Actions**
 
-The repository focuses on real-time camera ingestion, YOLO-based object detection, ByteTrack multi-object tracking, target-state representation, explicit target-lock state, runtime diagnostics, and clean interfaces between perception and the wider autonomous system.
+## Engineering highlights
 
-Production guidance, control, navigation, actuation, proprietary model artifacts, private datasets, and confidential deployment configuration are not included.
-
-## Key capabilities
-
-- Real-time YOLO object detection
-- ByteTrack multi-object tracking
-- Persistent track IDs
-- Typed target-state representation
-- Explicit/manual selected-track lock state
-- JSON perception metadata output
-- FPS and runtime-health monitoring
-- Webcam, video, and network-stream input
-- Configurable model/source/runtime settings
-- Unit tests and GitHub Actions CI
+- YOLO-based real-time aerial object detection
+- ByteTrack persistent multi-object tracking
+- Typed `TrackState` data model that decouples application code from model-specific results
+- Explicit perception-layer selected-track / lock-state handling
+- Serializable frame-level perception snapshots for telemetry and integration
+- Rolling FPS and frame-time metrics
+- Runtime health-state evaluation
+- Webcam, recorded-video, and network-stream inputs
+- Configurable model, source, confidence, image-size, and device settings
+- Unit-tested reusable logic
+- Automated syntax, lint, and test checks on Python 3.10, 3.11, and 3.12
 - Reproducible inference benchmarking
 
-## Automated interception pipeline
+## System architecture
 
-The perception side of the system is organized as independent stages:
+The perception pipeline is separated into independent stages:
 
-1. frame acquisition
-2. object detection
-3. multi-object tracking
-4. target-state normalization
-5. selected-track / lock-state management
-6. telemetry and visualization output
-7. interface handoff to the wider autonomous UAV stack
+1. **Video input** — webcam, file, or network stream
+2. **Detection** — YOLO class, confidence, and bounding-box inference
+3. **Tracking** — ByteTrack persistent track IDs
+4. **State normalization** — model results converted into typed `TrackState` records
+5. **Selected-track state** — explicit track ID visibility and lock-state management
+6. **Diagnostics** — FPS, frame-time, and runtime health
+7. **Output interface** — JSON-serializable perception snapshots for visualization and telemetry
 
-This separation keeps detection, tracking, state handling, diagnostics, and integration testable as independent modules.
+The repository intentionally stops at the perception/software-interface boundary. Proprietary flight-control, navigation, actuation, production model weights, private datasets, and confidential deployment configuration are not distributed here.
 
 ## Target-locking subsystem
 
-The target-locking implementation in this repository is limited to **perception-layer state management**.
+The target-locking code is limited to **perception-layer state management**. It supports explicit track selection, selected-ID persistence across frames, visibility status, and lock-state serialization.
 
-It supports:
+It does not implement autonomous target selection, navigation/control laws, flight-controller commands, or actuation.
 
-- selecting a track ID explicitly
-- maintaining the selected ID across frames
-- reporting whether the selected track is currently visible
-- marking the corresponding `TrackState` as locked
-- exposing lock state through a serializable interface
+## Measured project results
 
-It does not contain autonomous target-selection logic, flight-control commands, navigation laws, or actuation code.
-
-## Project results
-
-The original project work included:
+The original project work included the following measured results:
 
 | Metric | Result |
 |---|---:|
@@ -63,32 +52,30 @@ The original project work included:
 | Jetson Orin NX inference | 70+ FPS |
 | Optimized live-camera pipeline | 50+ FPS |
 
-These results refer to the original project configuration. The private dataset, production weights, and exact deployment configuration are not distributed with this repository.
-
-## Tech stack
-
-**Python · YOLO · PyTorch · OpenCV · ByteTrack · CUDA · NVIDIA Jetson · Edge AI**
+These results refer to the original project environment. The production dataset, trained weights, hardware-specific optimization settings, and exact deployment configuration are not included in this repository.
 
 ## Repository structure
 
-| Path | Purpose |
+| Path | Responsibility |
 |---|---|
-| `src/camera.py` | Frame acquisition |
 | `src/detect.py` | YOLO detection entry point |
 | `src/track.py` | YOLO + ByteTrack tracking |
-| `src/pipeline.py` | Integrated perception pipeline |
+| `src/pipeline.py` | Integrated perception, lock-state, metrics, and JSON output |
+| `src/camera.py` | Frame-source abstraction |
 | `src/target_state.py` | Typed tracked-object state |
 | `src/lock_state.py` | Selected-track lock-state manager |
-| `src/result_adapter.py` | Tracker-result normalization |
+| `src/result_adapter.py` | Ultralytics result normalization |
 | `src/interfaces.py` | Serializable perception snapshot |
-| `src/metrics.py` | Rolling FPS / latency metrics |
+| `src/metrics.py` | Rolling frame-time and FPS metrics |
 | `src/health.py` | Runtime health evaluation |
-| `src/config.py` | YAML configuration loader |
-| `scripts/benchmark.py` | Inference benchmark |
+| `src/config.py` | YAML configuration validation |
+| `config/` | Example runtime configuration |
+| `scripts/benchmark.py` | Inference benchmark utility |
 | `tests/` | Unit tests |
-| `docs/` | Architecture and engineering notes |
+| `docs/` | Architecture, verification, performance, and scope notes |
+| `pyproject.toml` | Test and lint configuration |
 
-## Installation
+## Setup
 
 ```powershell
 git clone https://github.com/dewanshpandey04/automated-interceptor-drone-guidance-system.git
@@ -96,46 +83,63 @@ cd automated-interceptor-drone-guidance-system
 
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
+
+For development and repository quality checks:
+
+```powershell
+pip install -r requirements-dev.txt
+```
+
+> NVIDIA Jetson deployments may require the JetPack-compatible PyTorch build provided for the target platform.
 
 ## Usage
 
 Detection:
 
 ```powershell
-python src/detect.py --source 0 --show
+python -m src.detect --source 0 --show
 ```
 
-Tracking:
+Multi-object tracking:
 
 ```powershell
-python src/track.py --source 0 --show
+python -m src.track --source 0 --show
 ```
 
-Integrated perception pipeline with an explicitly selected track:
+Integrated perception pipeline with an explicitly selected track ID:
 
 ```powershell
-python src/pipeline.py --source 0 --selected-track-id 7 --show --emit-json
+python -m src.pipeline --source 0 --selected-track-id 7 --show --emit-json
 ```
 
-Custom local model:
+Local custom model:
 
 ```powershell
-python src/pipeline.py --model path\to\model.pt --source path\to\video.mp4 --show
+python -m src.pipeline --model path\to\model.pt --source path\to\video.mp4 --show
 ```
 
-## Testing
+## Quality checks
+
+Run the same lightweight checks used by GitHub Actions:
 
 ```powershell
-pytest -q
+python -m compileall -q src scripts tests
+ruff check .
+python -m pytest -q
 ```
+
+CI runs these checks on **Python 3.10, 3.11, and 3.12**.
 
 ## Benchmarking
 
 ```powershell
 python scripts/benchmark.py --model yolo11n.pt --source path\to\video.mp4
 ```
+
+The benchmark reports measured frames, mean inference latency, p95 latency, and approximate inference FPS. Performance comparisons should state the model, input size, precision, hardware, and video pipeline.
 
 ## Documentation
 
@@ -144,6 +148,8 @@ python scripts/benchmark.py --model yolo11n.pt --source path\to\video.mp4
 - [Performance](docs/performance.md)
 - [Verification](docs/verification.md)
 - [Repository scope](docs/public-scope.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security](SECURITY.md)
 
 ## Branches
 
