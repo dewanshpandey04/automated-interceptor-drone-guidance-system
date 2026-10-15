@@ -3,10 +3,12 @@ from __future__ import annotations
 from typing import Sequence
 
 
-def parse_source(value: str):
-    """Convert a numeric webcam source such as '0' to int."""
-    value = value.strip()
-    return int(value) if value.isdigit() else value
+def parse_source(value: str | int) -> int | str:
+    """Normalize webcam indexes while preserving file paths and URLs."""
+    if isinstance(value, int):
+        return value
+    text = str(value).strip()
+    return int(text) if text.isdigit() else text
 
 
 def box_center(box: Sequence[float]) -> tuple[float, float]:
@@ -18,4 +20,5 @@ def contains_track(track_ids: Sequence[int], selected_track_id: int | None) -> b
     """Return whether an explicitly selected track is currently visible."""
     if selected_track_id is None:
         return False
-    return int(selected_track_id) in {int(v) for v in track_ids}
+    selected = int(selected_track_id)
+    return any(int(track_id) == selected for track_id in track_ids)
