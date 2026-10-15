@@ -6,11 +6,11 @@ import time
 import cv2
 from ultralytics import YOLO
 
-from utils import contains_track, parse_source
+from src.utils import contains_track, parse_source
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="YOLO + ByteTrack tracking demo.")
+    parser = argparse.ArgumentParser(description="YOLO + ByteTrack tracking.")
     parser.add_argument("--model", default="yolo11n.pt")
     parser.add_argument("--source", default="0")
     parser.add_argument("--tracker", default="bytetrack.yaml")
@@ -21,7 +21,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--selected-track-id",
         type=int,
         default=None,
-        help="Optional manually selected track ID for lock-state visualization.",
+        help="Optional explicit track ID for lock-state visualization.",
     )
     parser.add_argument("--show", action="store_true")
     parser.add_argument("--save", action="store_true")
@@ -53,7 +53,6 @@ def main() -> None:
 
         frame = result.plot()
         track_ids: list[int] = []
-
         if result.boxes is not None and result.boxes.id is not None:
             track_ids = [int(v) for v in result.boxes.id.cpu().tolist()]
 
