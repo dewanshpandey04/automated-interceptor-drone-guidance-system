@@ -1,40 +1,46 @@
-# Public-Safe System Architecture
+# System Architecture
 
-This repository documents the **perception and software-integration** side of an automated interceptor-drone project. Operational control logic is intentionally excluded.
+The public repository represents the **perception and software-integration layer** of the original project. The production system contained additional proprietary autonomous-system components that are intentionally not published here.
 
-```mermaid
-flowchart TD
-    A[Camera / Video / Stream] --> B[Frame Acquisition]
-    B --> C[YOLO Detection]
-    C --> D[ByteTrack Multi-Object Tracking]
-    D --> E[Track State Representation]
-    E --> F[Selection / Lock-State Visualization]
-    F --> G[Perception Interface]
-    G --> H[Telemetry / HUD]
-    G --> I[Autonomous-System Integration Boundary]
-```
+## Component model
 
-## Component responsibilities
+| Component | Responsibility | Public implementation |
+|---|---|---|
+| Video input | Accept webcam, recorded video, or network-stream sources | Yes |
+| Detection | Produce class, confidence, and bounding-box outputs | Yes |
+| Multi-object tracking | Associate detections over time and maintain IDs | Yes |
+| Track state | Normalize per-track metadata for downstream consumers | Yes |
+| Selection / lock state | Maintain a perception-layer selected-track state for visualization | Yes, visualization/state only |
+| Runtime metrics | Measure FPS and inference timing | Yes |
+| Configuration | Externalize model/source/runtime settings | Yes |
+| Perception interface | Define the boundary to the larger autonomous stack | Interface only |
+| Flight control / navigation | Vehicle guidance, actuation, control laws | No |
+| Operational interception logic | Production decision / engagement implementation | No |
 
-### Frame acquisition
-Accepts webcam, recorded video, or network-stream sources while keeping source handling separate from inference.
+## Data contract
 
-### Detector
-Produces class, confidence, and bounding-box metadata.
+Detection and tracking outputs are normalized into small Python data structures before downstream use. This keeps the vision model implementation separate from UI, telemetry, and integration code.
 
-### Tracker
-Associates detections across frames and provides persistent track IDs.
+A typical tracked-object record contains:
 
-### Track state
-Normalizes visible track metadata so downstream software receives a stable representation.
+- persistent track ID
+- class label
+- confidence score
+- bounding box coordinates
+- optional selected / lock-state flag
 
-### Perception interface
-Defines the boundary between vision software and the rest of the autonomous stack. The public repository stops at this interface.
+## Design decisions
 
-## Deliberately excluded
+**Separation of concerns.** Detection, tracking, state representation, configuration, and metrics live in separate modules so they can be tested independently.
 
-- proprietary company source code
-- flight-controller commands
-- navigation/control laws
-- interception or engagement logic
-- private datasets, footage, credentials, and model weights
+**Model independence.** Public scripts accept an Ultralytics model path at runtime rather than hard-coding a private model artifact.
+
+**Source independence.** Webcam indices, file paths, and network-style stream sources share the same command-line interface.
+
+**Safe integration boundary.** The public project stops at the perception interface and does not publish vehicle-control or operational interception implementation.
+
+**Reproducible measurement.** The benchmark utility reports timing for the exact model, source, and hardware selected by the user rather than embedding unverified performance claims.
+
+## Deployment context
+
+The professional project used NVIDIA Jetson hardware for edge inference. Hardware-specific optimizations, trained model weights, production camera configuration, and private deployment settings are excluded from the public repository.
