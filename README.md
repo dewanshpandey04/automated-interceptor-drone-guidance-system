@@ -53,6 +53,9 @@ ruff check .
 
 ## Documentation
 
+[Project evidence: code, tests, and research boundaries](docs/project-evidence.md)
+
+
 [Architecture](docs/architecture.md) · [Code tour](docs/code-tour.md) · [Verification](docs/verification.md) · [Performance](docs/performance.md) · [Public scope](docs/public-scope.md)
 
 Historical project accuracy and FPS claims are discussed in [performance notes](docs/performance.md); they are not independently reproduced by the public repository.
