@@ -16,10 +16,10 @@ Real-time **computer-vision and perception software** for aerial object detectio
 - Rolling FPS and frame-time metrics
 - Runtime health-state evaluation
 - Webcam, recorded-video, and network-stream inputs
-- Configurable model, source, confidence, image-size, and device settings
+- CLI and YAML-driven runtime configuration
 - Unit-tested reusable logic
-- Automated syntax, lint, and test checks on Python 3.10, 3.11, and 3.12
-- Reproducible inference benchmarking
+- Automated syntax, lint, CLI-smoke, and test checks on Python 3.10, 3.11, and 3.12
+- Human-readable and JSON inference benchmarking output
 
 ## System architecture
 
@@ -115,6 +115,14 @@ Integrated perception pipeline with an explicitly selected track ID:
 python -m src.pipeline --source 0 --selected-track-id 7 --show --emit-json
 ```
 
+Run from the example YAML configuration:
+
+```powershell
+python -m src.pipeline --config config\config.example.yaml --show
+```
+
+CLI values such as `--model`, `--source`, `--conf`, and `--imgsz` override the corresponding config values when supplied.
+
 Local custom model:
 
 ```powershell
@@ -128,6 +136,9 @@ Run the same lightweight checks used by GitHub Actions:
 ```powershell
 python -m compileall -q src scripts tests
 ruff check .
+python -m src.detect --help
+python -m src.track --help
+python -m src.pipeline --help
 python -m pytest -q
 ```
 
@@ -135,11 +146,19 @@ CI runs these checks on **Python 3.10, 3.11, and 3.12**.
 
 ## Benchmarking
 
+Human-readable output:
+
 ```powershell
 python scripts/benchmark.py --model yolo11n.pt --source path\to\video.mp4
 ```
 
-The benchmark reports measured frames, mean inference latency, p95 latency, and approximate inference FPS. Performance comparisons should state the model, input size, precision, hardware, and video pipeline.
+Machine-readable output:
+
+```powershell
+python scripts/benchmark.py --model yolo11n.pt --source path\to\video.mp4 --json
+```
+
+The benchmark reports measured frames, mean inference latency, p95 inference latency, and approximate inference FPS. Performance comparisons should state the model, input size, precision, hardware, and video pipeline.
 
 ## Documentation
 
