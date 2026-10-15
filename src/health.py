@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 
 @dataclass(frozen=True)
@@ -8,6 +8,9 @@ class HealthStatus:
     fps: float
     track_count: int
     status: str
+
+    def as_dict(self) -> dict:
+        return asdict(self)
 
 
 def evaluate_health(fps: float, track_count: int, minimum_fps: float = 10.0) -> HealthStatus:
