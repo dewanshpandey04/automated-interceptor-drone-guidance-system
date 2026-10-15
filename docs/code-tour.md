@@ -1,59 +1,57 @@
 # Code Tour
 
-This page is intended for reviewers who want to understand the repository quickly.
-
-## `src/camera.py`
-
-Wraps webcam, recorded-video, and network-stream input behind a small frame-packet interface.
-
 ## `src/detect.py`
 
-Command-line entry point for real-time YOLO inference. The model path, source, confidence threshold, image size, device, and display/save behavior are runtime arguments.
+Command-line entry point for real-time YOLO inference. Model path, source, confidence threshold, image size, compute device, and display/save behavior are runtime arguments.
 
 ## `src/track.py`
 
-Runs YOLO with ByteTrack and exposes persistent IDs. Selected-track visualization is explicit/manual; the public code does not perform autonomous target selection.
+Runs YOLO with ByteTrack and exposes persistent track IDs. An optional explicit track ID can be used to visualize selected-track visibility.
 
 ## `src/pipeline.py`
 
-Combines detection, ByteTrack tracking, selected-track state, JSON metadata output, and visualization into one public-safe perception demo.
+Integrates detection, tracking, normalized state, selected-track state, rolling metrics, runtime health, JSON metadata output, and visualization.
+
+## `src/camera.py`
+
+Provides a small frame-source abstraction for webcam, file, or network video input.
 
 ## `src/target_state.py`
 
-Defines a typed tracked-object state so downstream code does not depend directly on Ultralytics result objects.
+Defines the typed `TrackState` model used by downstream perception code.
 
 ## `src/lock_state.py`
 
-Maintains perception-layer selected-track state and reports whether that explicitly selected ID is visible in the current frame.
+Maintains the explicitly selected track ID and reports whether it is visible in the current frame.
 
 ## `src/result_adapter.py`
 
-Converts Ultralytics tracker results into stable `TrackState` objects.
+Converts Ultralytics tracking results into stable `TrackState` objects so higher-level modules are not coupled directly to framework-specific result structures.
 
 ## `src/interfaces.py`
 
-Defines a serializable `PerceptionSnapshot` contract for visualization, telemetry, or other non-control integration layers.
+Defines `PerceptionSnapshot`, a serializable frame-level contract containing timestamp, FPS, selected-track ID, and tracked-object state.
 
 ## `src/metrics.py`
 
-Implements rolling FPS and frame-time metrics independently from the inference engine.
+Maintains a rolling window of frame times and exposes mean frame time and approximate FPS.
 
 ## `src/health.py`
 
-Produces a small runtime health status from FPS and visible-track counts.
+Maps runtime FPS and visible-track count to a small diagnostic health state.
 
 ## `src/config.py`
 
-Loads and validates the public YAML configuration template.
+Loads and validates the YAML runtime configuration schema.
 
 ## `scripts/benchmark.py`
 
-Measures model inference timing for the exact model/source/device chosen by the reviewer.
+Collects model inference timings and reports mean latency, p95 latency, and approximate inference FPS.
 
 ## `tests/`
 
-Contains pure-Python unit tests for parsing, geometry, selected-track state, track serialization, interfaces, runtime health, and performance metrics.
+Covers parsing, configuration validation, target state, selected-track state, result normalization, interfaces, runtime health, and performance metrics.
 
-## Why the repository is structured this way
+## Design intent
 
-The goal is to show production-oriented habits: small modules, explicit data contracts, configuration outside source, tests for reusable logic, and a documented boundary between public perception code and private production integration.
+The source tree separates inference, tracking, state models, diagnostics, configuration, and integration contracts so reusable logic can be tested independently from GPU inference.
