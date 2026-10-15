@@ -5,11 +5,11 @@ import argparse
 import cv2
 from ultralytics import YOLO
 
-from utils import parse_source
+from src.utils import parse_source
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Real-time YOLO detection demo.")
+    parser = argparse.ArgumentParser(description="Real-time YOLO detection.")
     parser.add_argument("--model", default="yolo11n.pt")
     parser.add_argument("--source", default="0", help="Webcam index, image/video path, or stream URL.")
     parser.add_argument("--conf", type=float, default=0.35)
