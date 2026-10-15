@@ -1,11 +1,13 @@
 # Model Artifacts
 
-Model weights are intentionally not stored in this public repository.
+Model weights are not stored in this repository.
 
-Use a local or publicly licensed model path at runtime, for example:
+Use a local model path at runtime:
 
 ```powershell
-python src/pipeline.py --model path\to\model.pt --source 0 --show
+python -m src.pipeline --model path\to\model.pt --source 0 --show
 ```
 
-Do not commit proprietary weights, private training data, or employer-owned model artifacts.
+For NVIDIA Jetson, use a PyTorch/runtime build compatible with the target JetPack and CUDA version.
+
+Do not commit proprietary weights, private training data, credentials, or employer-owned model artifacts.
