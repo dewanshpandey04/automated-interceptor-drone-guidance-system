@@ -2,95 +2,104 @@
 
 ![CI](https://github.com/dewanshpandey04/automated-interceptor-drone-guidance-system/actions/workflows/ci.yml/badge.svg)
 
-A public, portfolio-safe representation of the **computer-vision and software-integration work** I performed on an automated interceptor-drone project.
+## Overview
 
-My work focused on the perception and integration layers: live camera processing, custom YOLO detection, multi-object tracking, track-state handling, **perception-layer target locking**, **automated interception pipeline integration**, edge-AI inference, performance measurement, and clean software boundaries for the wider autonomous UAV stack.
+Reference implementation of the **perception and software-integration layer** used in an automated interceptor UAV system.
 
-> This repository does not publish Vayuron proprietary source code, private datasets, model weights, credentials, flight-controller commands, navigation/control laws, actuation logic, or operational interception behavior.
+The repository focuses on real-time camera ingestion, YOLO-based object detection, ByteTrack multi-object tracking, target-state representation, explicit target-lock state, runtime diagnostics, and clean interfaces between perception and the wider autonomous system.
 
-## My contribution
+Production guidance, control, navigation, actuation, proprietary model artifacts, private datasets, and confidential deployment configuration are not included.
 
-- Built real-time object-detection pipelines for aerial imagery using YOLO, PyTorch, and OpenCV.
-- Integrated ByteTrack for persistent multi-object tracking across live video frames.
-- Implemented reusable track-state structures for IDs, classes, confidence scores, and bounding boxes.
-- Developed a perception-layer target-locking workflow that maintains selected-track / lock-state metadata across frames.
-- Exposed target-lock state through a clean software interface for visualization, telemetry, and wider autonomous-system integration.
-- Contributed to the **automated interception pipeline** by connecting camera perception, detection, tracking, target-state handling, and target-locking components through modular software interfaces.
-- Structured perception outputs so downstream autonomy components could consume stable state data without depending directly on raw detector outputs.
-- Kept perception, integration interfaces, and vehicle-control implementation separated so modules remained testable and maintainable.
-- Worked with NVIDIA Jetson-class edge hardware for low-latency onboard inference.
-- Added validation utilities and CI so the public implementation can be inspected like a real engineering project.
+## Key capabilities
 
-## Automated Interception Pipeline
+- Real-time YOLO object detection
+- ByteTrack multi-object tracking
+- Persistent track IDs
+- Typed target-state representation
+- Explicit/manual selected-track lock state
+- JSON perception metadata output
+- FPS and runtime-health monitoring
+- Webcam, video, and network-stream input
+- Configurable model/source/runtime settings
+- Unit tests and GitHub Actions CI
+- Reproducible inference benchmarking
 
-The professional system used a modular interception pipeline in which multiple software components were connected through clear interfaces.
+## Automated interception pipeline
 
-At a high level, the public-facing portion covers:
+The perception side of the system is organized as independent stages:
 
-- live camera / video acquisition
-- real-time object detection
-- multi-object tracking with persistent IDs
-- target-state representation
-- perception-layer target locking
-- telemetry and visualization outputs
-- software handoff to the wider autonomous UAV stack
+1. frame acquisition
+2. object detection
+3. multi-object tracking
+4. target-state normalization
+5. selected-track / lock-state management
+6. telemetry and visualization output
+7. interface handoff to the wider autonomous UAV stack
 
-The public repository demonstrates the **perception and software-integration side of that pipeline only**. It intentionally excludes proprietary guidance algorithms, flight-control commands, navigation/control laws, actuation logic, and operational interception behavior.
+This separation keeps detection, tracking, state handling, diagnostics, and integration testable as independent modules.
 
-## Target-Locking System
+## Target-locking subsystem
 
-The target-locking code in this public repository is deliberately limited to **manual selected-track state and visualization**.
+The target-locking implementation in this repository is limited to **perception-layer state management**.
 
-It demonstrates:
+It supports:
 
-- maintaining a selected track ID across frames
+- selecting a track ID explicitly
+- maintaining the selected ID across frames
 - reporting whether the selected track is currently visible
-- attaching lock-state metadata to a tracked-object representation
-- exposing that state through a serializable perception interface
-- keeping lock-state handling independent from vehicle-control logic
+- marking the corresponding `TrackState` as locked
+- exposing lock state through a serializable interface
 
-## Professional project results
+It does not contain autonomous target-selection logic, flight-control commands, navigation laws, or actuation code.
 
-The following figures describe the original professional project work and are **not claimed as reproducible from the public repository**, because the private dataset, trained model artifacts, and production hardware configuration are intentionally excluded.
+## Project results
 
-| Result | Professional project |
+The original project work included:
+
+| Metric | Result |
 |---|---:|
 | Training dataset | ~18,000 aerial images |
-| Detector performance | mAP50 above 0.92 on custom aerial detectors |
-| Jetson Orin NX inference | 70+ FPS in the project configuration |
-| Live edge inference | 50+ FPS on optimized live-camera pipelines |
+| Custom detector | mAP50 > 0.92 |
+| Jetson Orin NX inference | 70+ FPS |
+| Optimized live-camera pipeline | 50+ FPS |
 
-## Technical stack
+These results refer to the original project configuration. The private dataset, production weights, and exact deployment configuration are not distributed with this repository.
+
+## Tech stack
 
 **Python · YOLO · PyTorch · OpenCV · ByteTrack · CUDA · NVIDIA Jetson · Edge AI**
 
-## Source code
+## Repository structure
 
 | Path | Purpose |
 |---|---|
-| `src/camera.py` | Webcam / video / network-stream frame acquisition wrapper |
-| `src/detect.py` | Real-time YOLO inference |
-| `src/track.py` | YOLO + ByteTrack tracking with explicit selected-track visualization |
-| `src/pipeline.py` | Integrated public perception pipeline |
+| `src/camera.py` | Frame acquisition |
+| `src/detect.py` | YOLO detection entry point |
+| `src/track.py` | YOLO + ByteTrack tracking |
+| `src/pipeline.py` | Integrated perception pipeline |
 | `src/target_state.py` | Typed tracked-object state |
-| `src/lock_state.py` | Manual perception-layer lock-state manager |
-| `src/result_adapter.py` | Converts model/tracker results into stable track-state objects |
-| `src/interfaces.py` | Serializable perception snapshot contract |
+| `src/lock_state.py` | Selected-track lock-state manager |
+| `src/result_adapter.py` | Tracker-result normalization |
+| `src/interfaces.py` | Serializable perception snapshot |
 | `src/metrics.py` | Rolling FPS / latency metrics |
-| `src/health.py` | Runtime health/status evaluation |
-| `src/config.py` | YAML configuration loading and validation |
-| `scripts/benchmark.py` | Reproducible inference benchmark |
-| `tests/` | Unit tests for state, interfaces, metrics, health, and utilities |
-| `models/README.md` | Model-artifact policy |
-| `docs/` | Architecture, verification, performance, and code-tour notes |
+| `src/health.py` | Runtime health evaluation |
+| `src/config.py` | YAML configuration loader |
+| `scripts/benchmark.py` | Inference benchmark |
+| `tests/` | Unit tests |
+| `docs/` | Architecture and engineering notes |
 
-## Quick start
+## Installation
 
 ```powershell
+git clone https://github.com/dewanshpandey04/automated-interceptor-drone-guidance-system.git
+cd automated-interceptor-drone-guidance-system
+
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
+
+## Usage
 
 Detection:
 
@@ -104,43 +113,43 @@ Tracking:
 python src/track.py --source 0 --show
 ```
 
-Public integrated pipeline with a manually selected track ID:
+Integrated perception pipeline with an explicitly selected track:
 
 ```powershell
 python src/pipeline.py --source 0 --selected-track-id 7 --show --emit-json
 ```
 
-Use a local model without committing the weight file:
+Custom local model:
 
 ```powershell
 python src/pipeline.py --model path\to\model.pt --source path\to\video.mp4 --show
 ```
 
-Run tests:
+## Testing
 
 ```powershell
 pytest -q
 ```
 
-Run a benchmark:
+## Benchmarking
 
 ```powershell
 python scripts/benchmark.py --model yolo11n.pt --source path\to\video.mp4
 ```
 
-## Engineering documentation
+## Documentation
 
-- [System architecture](docs/architecture.md)
+- [Architecture](docs/architecture.md)
 - [Code tour](docs/code-tour.md)
-- [Performance and results](docs/performance.md)
-- [Verification approach](docs/verification.md)
-- [Public / proprietary boundary](docs/public-scope.md)
+- [Performance](docs/performance.md)
+- [Verification](docs/verification.md)
+- [Repository scope](docs/public-scope.md)
 
-## Branch strategy
+## Branches
 
-- `main` — stable recruiter-facing portfolio version
-- `develop` — development and integration work
-- `docs` — documentation-focused changes
+- `main` — stable branch
+- `develop` — development and integration
+- `docs` — documentation work
 
 ## Author
 
