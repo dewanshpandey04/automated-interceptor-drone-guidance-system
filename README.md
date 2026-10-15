@@ -1,5 +1,7 @@
 # Automated Interceptor Drone Guidance & Perception System
 
+![CI](https://github.com/dewanshpandey04/automated-interceptor-drone-guidance-system/actions/workflows/ci.yml/badge.svg)
+
 A public, portfolio-safe representation of the **computer-vision and software-integration work** I performed on an automated interceptor-drone project.
 
 My work focused on the perception stack: live camera processing, custom YOLO detection, multi-object tracking, track-state handling, target-selection/lock-state visualization, edge-AI inference, performance measurement, and integration boundaries for the wider autonomous UAV software stack.
@@ -101,4 +103,5 @@ python scripts/benchmark.py --model yolo11n.pt --source path\to\video.mp4
 ## Author
 
 **Dewansh Pandey**  
-AI/ML Engineer | Computer Vision & Autonomous Systems
+AI/ML Engineer | Computer Vision & Autonomous Systems  
+[LinkedIn](https://www.linkedin.com/in/dewansh-pandey-9b564a317) · [GitHub](https://github.com/dewanshpandey04)
