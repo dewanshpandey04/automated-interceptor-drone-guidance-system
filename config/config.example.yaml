@@ -1,6 +1,6 @@
 project:
   name: automated-interceptor-drone-guidance-system
-  mode: portfolio-demo
+  mode: development
 
 camera:
   source: 0
