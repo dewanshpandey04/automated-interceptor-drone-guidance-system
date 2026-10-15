@@ -1,14 +1,15 @@
 ## Summary
 
-Describe the change and why it improves the public portfolio project.
+Describe what changed and why.
 
 ## Validation
 
-- [ ] Unit tests pass
+- [ ] Tests pass locally
+- [ ] New or changed reusable logic has test coverage where appropriate
 - [ ] No credentials, private URLs, datasets, footage, model weights, or proprietary source are included
-- [ ] Documentation is updated where needed
-- [ ] Performance claims are tied to a stated model/hardware/configuration
+- [ ] Documentation has been updated if behavior or interfaces changed
+- [ ] Performance claims include the relevant model, hardware, and configuration
 
 ## Notes
 
-Add any reviewer context here.
+Add implementation details, limitations, or reviewer context if needed.
