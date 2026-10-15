@@ -7,14 +7,17 @@ import time
 import cv2
 from ultralytics import YOLO
 
-from lock_state import TargetLockState
-from result_adapter import track_states_from_result
-from utils import parse_source
+from src.health import evaluate_health
+from src.interfaces import PerceptionSnapshot
+from src.lock_state import TargetLockState
+from src.metrics import RuntimeMetrics
+from src.result_adapter import track_states_from_result
+from src.utils import parse_source
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Public-safe perception pipeline: detection, tracking, and lock-state visualization."
+        description="Detection, tracking, selected-track state, and perception telemetry."
     )
     parser.add_argument("--model", default="yolo11n.pt")
     parser.add_argument("--source", default="0")
@@ -32,6 +35,7 @@ def main() -> None:
     args = build_parser().parse_args()
     model = YOLO(args.model)
     lock = TargetLockState()
+    metrics = RuntimeMetrics(window=60)
 
     if args.selected_track_id is not None:
         lock.select(args.selected_track_id)
@@ -49,23 +53,32 @@ def main() -> None:
 
     previous = time.perf_counter()
 
-    for result in results:
+    for frame_id, result in enumerate(results, start=1):
         now = time.perf_counter()
-        fps = 1.0 / max(now - previous, 1e-9)
+        metrics.add_frame_time_ms((now - previous) * 1000.0)
         previous = now
 
-        track_ids = []
+        track_ids: list[int] = []
         if result.boxes is not None and result.boxes.id is not None:
             track_ids = [int(v) for v in result.boxes.id.cpu().tolist()]
 
         lock.update_visible_tracks(track_ids)
         states = track_states_from_result(result, lock.selected_track_id)
+        health = evaluate_health(metrics.fps, len(states))
+
+        snapshot = PerceptionSnapshot(
+            frame_id=frame_id,
+            captured_at=time.time(),
+            fps=metrics.fps,
+            tracks=states,
+            selected_track_id=lock.selected_track_id,
+        )
 
         if args.emit_json:
             payload = {
-                "fps": round(fps, 2),
+                "perception": snapshot.as_dict(),
                 "lock": lock.as_dict(),
-                "tracks": [state.as_dict() for state in states],
+                "health": health.as_dict(),
             }
             print(json.dumps(payload, separators=(",", ":")))
 
@@ -73,7 +86,7 @@ def main() -> None:
             frame = result.plot()
             cv2.putText(
                 frame,
-                f"FPS {fps:.1f} | Tracks {len(states)} | Lock {lock.status}",
+                f"FPS {metrics.fps:.1f} | Tracks {len(states)} | Health {health.status}",
                 (20, 35),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.7,
@@ -84,7 +97,7 @@ def main() -> None:
             if lock.selected_track_id is not None:
                 cv2.putText(
                     frame,
-                    f"Selected track: {lock.selected_track_id}",
+                    f"Selected track: {lock.selected_track_id} | {lock.status}",
                     (20, 70),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.7,
@@ -92,7 +105,7 @@ def main() -> None:
                     2,
                     cv2.LINE_AA,
                 )
-            cv2.imshow("Public Perception Pipeline", frame)
+            cv2.imshow("Perception Pipeline", frame)
             if cv2.waitKey(1) & 0xFF in (27, ord("q")):
                 break
 
