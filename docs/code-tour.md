@@ -2,21 +2,45 @@
 
 This page is intended for reviewers who want to understand the repository quickly.
 
+## `src/camera.py`
+
+Wraps webcam, recorded-video, and network-stream input behind a small frame-packet interface.
+
 ## `src/detect.py`
 
 Command-line entry point for real-time YOLO inference. The model path, source, confidence threshold, image size, device, and display/save behavior are runtime arguments.
 
 ## `src/track.py`
 
-Runs YOLO with ByteTrack and extracts persistent IDs and boxes. The public implementation includes selected-track visualization only; it does not contain vehicle-control or guidance logic.
+Runs YOLO with ByteTrack and exposes persistent IDs. Selected-track visualization is explicit/manual; the public code does not perform autonomous target selection.
+
+## `src/pipeline.py`
+
+Combines detection, ByteTrack tracking, selected-track state, JSON metadata output, and visualization into one public-safe perception demo.
 
 ## `src/target_state.py`
 
-Defines a small typed track-state object so downstream code does not depend directly on Ultralytics result objects.
+Defines a typed tracked-object state so downstream code does not depend directly on Ultralytics result objects.
+
+## `src/lock_state.py`
+
+Maintains perception-layer selected-track state and reports whether that explicitly selected ID is visible in the current frame.
+
+## `src/result_adapter.py`
+
+Converts Ultralytics tracker results into stable `TrackState` objects.
+
+## `src/interfaces.py`
+
+Defines a serializable `PerceptionSnapshot` contract for visualization, telemetry, or other non-control integration layers.
 
 ## `src/metrics.py`
 
-Implements rolling FPS and frame-time metrics independently from the inference engine. This makes performance reporting testable without requiring a GPU.
+Implements rolling FPS and frame-time metrics independently from the inference engine.
+
+## `src/health.py`
+
+Produces a small runtime health status from FPS and visible-track counts.
 
 ## `src/config.py`
 
@@ -28,7 +52,7 @@ Measures model inference timing for the exact model/source/device chosen by the 
 
 ## `tests/`
 
-Contains pure-Python unit tests for input parsing, box geometry, track selection, state serialization, and runtime metrics.
+Contains pure-Python unit tests for parsing, geometry, selected-track state, track serialization, interfaces, runtime health, and performance metrics.
 
 ## Why the repository is structured this way
 
