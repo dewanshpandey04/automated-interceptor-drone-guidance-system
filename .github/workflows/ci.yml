@@ -37,5 +37,12 @@ jobs:
       - name: Lint
         run: ruff check .
 
+      - name: CLI smoke checks
+        run: |
+          python -m src.detect --help > /dev/null
+          python -m src.track --help > /dev/null
+          python -m src.pipeline --help > /dev/null
+          python scripts/benchmark.py --help > /dev/null
+
       - name: Unit tests
         run: python -m pytest -q
